@@ -173,3 +173,7 @@ services:
 
 volumes:
   model-cache:
+  postgres_data:
+networks:
+  main:
+    external: true
