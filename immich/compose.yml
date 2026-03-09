@@ -23,6 +23,8 @@ services:
       - redis
       - database
     restart: always
+    networks:
+      - main
     healthcheck:
       disable: false
     # ── Transcoding hardware acceleration ──────────────────────────────────────
@@ -84,6 +86,8 @@ services:
     env_file:
       - .env.dockhand
     restart: always
+    networks:
+      - main
     healthcheck:
       disable: false
     # ── ML hardware acceleration ───────────────────────────────────────────────
@@ -145,6 +149,8 @@ services:
     healthcheck:
       test: redis-cli ping || exit 1
     restart: always
+    networks:
+      - main
 
   database:
     container_name: immich_postgres
@@ -160,6 +166,8 @@ services:
       - postgres_data:/var/lib/postgresql/data
     shm_size: 128mb
     restart: always
+    networks:
+      - main
     healthcheck:
       disable: false
 
