@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:18.3-trixie
-    env_file: .env
+    env_file: .env.dockhand
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -21,7 +21,7 @@ services:
 
   redis:
     image: valkey/valkey:9.0.3
-    env_file: .env
+    env_file: .env.dockhand
     command: ["--port", "${REDIS_PORT}", "--requirepass", "${REDIS_PASSWORD}"]
     volumes:
       - redis-data:/data
@@ -36,7 +36,7 @@ services:
 
   romm:
     image: ghcr.io/rommapp/romm:4.7.0
-    env_file: .env
+    env_file: .env.dockhand
     depends_on:
       postgres:
         condition: service_healthy
