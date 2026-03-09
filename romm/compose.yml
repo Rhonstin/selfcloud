@@ -1,0 +1,86 @@
+services:
+  postgres:
+    image: postgres:18.3-trixie
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: ${PGDATA}
+      PGPORT: ${PGPORT}
+    networks:
+      - main
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-p", "${PGPORT}", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  redis:
+    image: valkey/valkey:9.0.3
+    env_file: .env
+    command: ["--port", "${REDIS_PORT}", "--requirepass", "${REDIS_PASSWORD}"]
+    volumes:
+      - redis-data:/data
+    networks:
+      - main
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "${REDIS_PORT}", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  romm:
+    image: ghcr.io/rommapp/romm:4.7.0
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWD: ${POSTGRES_PASSWORD}
+      DB_PORT: ${PGPORT}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_PORT: ${REDIS_PORT}
+      ROMM_AUTH_SECRET_KEY: ${ROMM_AUTH_SECRET_KEY}
+      ROMM_BASE_PATH: /romm
+      ROMM_DB_DRIVER: postgresql
+      IGDB_CLIENT_ID: ${IGDB_CLIENT_ID}
+      IGDB_CLIENT_SECRET: ${IGDB_CLIENT_SECRET}
+      STEAMGRIDDB_API_KEY: ${STEAMGRIDDB_API_KEY}
+      SCREENSCRAPER_USER: ${SCREENSCRAPER_USER}
+      SCREENSCRAPER_PASSWORD: ${SCREENSCRAPER_PASSWORD}
+      HASHEOUS_API_ENABLED: 'true'
+      FLASHPOINT_API_ENABLED: 'true'
+    networks:
+      - main
+    volumes:
+      - romm_config:/romm/config
+      - /mnt/media/:/romm/library
+      - romm_assets:/romm/assets
+      - romm_resources:/romm/resources
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--fail", "http://127.0.0.1:8080/api/heartbeat"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+networks:
+  main:
+    external: true
+
+volumes:
+  postgres-data:
+  redis-data:
+  romm_config:
+  romm_assets:
+  romm_resources:
