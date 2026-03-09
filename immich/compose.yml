@@ -157,7 +157,7 @@ services:
       # Uncomment if your database is stored on HDDs (not SSDs):
       # DB_STORAGE_TYPE: 'HDD'
     volumes:
-      - ${DB_DATA_LOCATION}:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     shm_size: 128mb
     restart: always
     healthcheck:
